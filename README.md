@@ -1,5 +1,5 @@
-# microsoft-hack
-Informatics Lab Microsoft hack week
+# ERDC Regridding API
+API for regriding MOGREPS data
 
 # Gotchas
 
