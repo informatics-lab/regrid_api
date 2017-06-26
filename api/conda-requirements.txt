@@ -1,0 +1,7 @@
+# Use this file to create a conda environment using:
+# conda create -n <name> --file conda-requirements.txt
+
+# Mandatory dependencies
+python=3.5.*
+flask
+boto3
