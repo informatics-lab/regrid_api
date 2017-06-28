@@ -69,3 +69,5 @@ localConfig.json
 
 # terraform
 *.tfstate*
+
+**/.DS_Store

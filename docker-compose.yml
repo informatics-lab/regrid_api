@@ -1,5 +1,29 @@
 version: '3'
 services:
+  scheduler:
+    build: ./scheduler
+    container_name: scheduler
+    networks:
+      - distrabuted-tier
+    deploy:
+      restart_policy:
+        condition: on-failure
+    expose:
+      - 8787
+      - 8786
+    ports:
+      - '8787:8787'
+      - '8786:8786'
+
+  processor:
+    build: ./processor
+    container_name: processor
+    networks:
+      - distrabuted-tier
+    deploy:
+      restart_policy:
+        condition: on-failure
+    
   nginx:
     image: nginx
     container_name: nginx
@@ -13,6 +37,9 @@ services:
       - 'nginx-webroot:/usr/share/nginx/html'
     networks:
       - proxy-tier
+    deploy:
+      restart_policy:
+        condition: on-failure
 
   dockergen:
     image: jwilder/docker-gen
@@ -52,6 +79,14 @@ services:
       - /opt/data:/opt/data
     networks:
       - proxy-tier
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      - VIRTUAL_HOST=${API_DNS}
+      - VIRTUAL_NETWORK=nginx-proxy
+      - LETSENCRYPT_HOST=${API_DNS}
+      - LETSENCRYPT_EMAIL=theo.mccaie@informaticslab.co.uk
 
 volumes:
   nginx-config:
@@ -63,4 +98,6 @@ networks:
   proxy-tier:
     external:
       name: nginx-proxy
+  distrabuted-tier:
+    
 
