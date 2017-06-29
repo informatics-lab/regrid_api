@@ -1,8 +1,15 @@
 # API
 
+## Pre-req
+- [mini conda](https://conda.io/docs/install/quick.html#miniconda-quick-install-requirements)
+
 ## Setup
 
-### Development
+```
+brew install 
+cd <location of this read me>
+conda remove --name erdc_api --all # may be required if not the first time
+conda create --name erdc_api python=3 flask boto3
+source activate erdc_api
 
-- Create virtualenv (`conda create -n erdc_api python=3.5 --file conda-requirements.txt`)
-- Install locally (`pip install -e .`)
+### Development

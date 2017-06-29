@@ -1,5 +1,6 @@
-provider "aws" {
-  region = "eu-west-1"
+
+variable "region" {
+  default = "eu-west-1"
 }
 
 variable "iam_profile" {
@@ -11,6 +12,5 @@ variable "dns" {
 }
 
 
-variable "to_process_queue_name" {
-  default = "erdc-api-to-process"
-}
+
+variable "aws_account_id" {}

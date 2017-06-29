@@ -71,3 +71,6 @@ localConfig.json
 *.tfstate*
 
 **/.DS_Store
+**/lambda.zip
+
+**/.terraform/*
