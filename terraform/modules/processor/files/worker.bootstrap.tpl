@@ -6,5 +6,17 @@
 # bash ~/miniconda.sh -b -p $HOME/miniconda
 # export PATH="$HOME/miniconda/bin:$PATH"
 export PATH="/home/ubuntu/anaconda3/bin:$PATH"
-conda install dask distributed boto3 -y # TODO: specify versions.
-dask-worker ${scheduler_address} --nprocs $(grep -c ^processor /proc/cpuinfo) --nthreads 1 
+conda install dask=${dask_ver} distributed=${distributed_ver} boto3 -y
+
+
+echo "Waiting load balancer..."
+
+while ! nc -w 2 -z ${scheduler_address} ${scheduler_port}; do   
+  echo "waiting..."
+  sleep 1 # wait for 1 second before check again
+done
+
+echo "load balancer up"
+
+
+dask-worker ${scheduler_address}:${scheduler_port} --nprocs $(grep -c ^processor /proc/cpuinfo) --nthreads 1 

@@ -11,6 +11,12 @@ variable "dns" {
   default = "erdc-api.informaticslab.co.uk"
 }
 
-
-
 variable "aws_account_id" {}
+
+variable "versions" {
+  type = "map"
+  default = {
+    distributed = "1.17.1"
+    dask        = "0.15.0"
+  }
+}

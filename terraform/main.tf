@@ -12,6 +12,7 @@ module "processor" {
   source = "modules/processor"
   iam_role = "${var.iam_role}"
   input_queue_name = "${module.queue.input_queue}"
+  versions = "${var.versions}"
 }
 
 module "api" {
@@ -25,10 +26,6 @@ module "api" {
 
 data "external" "zip_lambda" {
   program = ["bash", "files/build.sh"]
-}
-
-output "api_url" {
-  value = "${module.api.api_url}"
 }
 
 variable "iam_role" {
