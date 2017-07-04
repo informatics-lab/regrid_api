@@ -16,6 +16,7 @@ module "processor" {
 }
 
 module "api" {
+  bucket = "${var.bucket_name}"
   source = "modules/api"
   region = "${var.region}"
   accountId = "${var.aws_account_id}"

@@ -13,6 +13,10 @@ variable "dns" {
 
 variable "aws_account_id" {}
 
+variable "bucket_name" {
+  default = "regrid-api-result"
+}
+
 variable "versions" {
   type = "map"
   default = {

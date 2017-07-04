@@ -1,5 +1,5 @@
-# API Gateway
 resource "aws_api_gateway_rest_api" "api" {
+# API Gateway
   name = "erdc_api"
 }
 
@@ -92,6 +92,7 @@ resource "aws_lambda_function" "erdic_api" {
   environment {
     variables = {
       QUEUE_NAME = "${var.queue_name}"
+      BUCKET_NAME = "${var.bucket}"
     }
   }
 }
