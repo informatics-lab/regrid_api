@@ -22,5 +22,6 @@ variable "versions" {
   default = {
     distributed = "1.17.1"
     dask        = "0.15.0"
+    iris        = "1.13.0"
   }
 }

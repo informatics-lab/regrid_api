@@ -33,13 +33,13 @@ def is_valid(coverage):
     
     axes = domain.get('axes',{})
 
-    if not set(['x','y','t']) == set( axes.keys()):
-        raise ValueError('domain.axes must contain x, y and t exacally')
+    if not set(['lat','lon','t']) == set( axes.keys()):
+        raise ValueError('domain.axes must contain lat, lon and t exacally')
     
 
     is_non_0_array = lambda x: isinstance(x, list) and len(x) > 0
-    if not all(is_non_0_array(axes[i].get('values')) for i in ['x','y','t']):
-        raise ValueError('domin.x.values , domain.y.values, domain.t.values must all be non 0 arrays')
+    if not all(is_non_0_array(axes[i].get('values')) for i in ['lat','lon','t']):
+        raise ValueError('domin.lat.values , domain.lon.values, domain.t.values must all be non 0 arrays')
     
 
     referencing = domain.get('referencing', [])
@@ -52,6 +52,17 @@ def is_valid(coverage):
     if not (system['type'] == "GeographicCRS" and system["id"] == "http://www.opengis.net/def/crs/EPSG/0/4979"): 
         raise ValueError('referencing[0].system.type must equal GeographicCRS' +
                          ' and referencing[0].system.id must equal http://www.opengis.net/def/crs/EPSG/0/4979')
+
+    
+    params = coverage.get('parameters', {})
+    param_names = params.keys()
+    avalaliable_params = ['wet_bulb_freezing_level_altitude', 'air_pressure_at_sea_level', 'dew_point_temperature',
+          'fog_area_fraction', 'visibility_in_air', 'high_type_cloud_area_fraction']
+    if len(param_names) < 1:
+        raise ValueError('Must supply at least one parameter in the parameters section')
+    
+    if not all(requested in avalaliable_params for requested in param_names):
+        raise ValueError('Parameters can only be one or more of %s' % avalaliable_params)
     
     return True
     

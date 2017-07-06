@@ -217,6 +217,7 @@ data "template_file" "scheduler_config" {
     script              = "${file("../processor/process.py")}" # A better way might be to upload to s3 / pastebin and download.
     dask_ver            =  "${var.versions["dask"]}"
     distributed_ver     =  "${var.versions["distributed"]}"
+    cf_units_version    =  "${var.versions["cf_units"]}"
   }
 }
 
@@ -239,7 +240,7 @@ resource "aws_autoscaling_group" "scheduler" {
   name                  = "erdc_api_scheduler"
   availability_zones    = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
   max_size              = 1
-  min_size              = 1 # TODO: back to 0
+  min_size              = 0 
   health_check_grace_period = 300
   health_check_type     = "EC2"
   force_delete          = true
@@ -275,6 +276,7 @@ data "template_file" "worker_config" {
     scheduler_port = "8786"
     dask_ver            =  "${var.versions["dask"]}"
     distributed_ver     =  "${var.versions["distributed"]}"
+    iris_ver           =  "${var.versions["iris"]}"
   }
 }
 
@@ -294,7 +296,7 @@ resource "aws_autoscaling_group" "erdc_dask_workers" {
   name                  = "erdc_api_workers"
   availability_zones    = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
   max_size              = 5
-  min_size              = 1 # TODO: back to 0
+  min_size              = 0
   health_check_grace_period = 300
   health_check_type     = "EC2"
   force_delete          = true
