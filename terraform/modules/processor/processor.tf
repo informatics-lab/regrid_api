@@ -217,7 +217,7 @@ data "template_file" "scheduler_config" {
     script              = "${file("../processor/process.py")}" # A better way might be to upload to s3 / pastebin and download.
     dask_ver            =  "${var.versions["dask"]}"
     distributed_ver     =  "${var.versions["distributed"]}"
-    cf_units_version    =  "${var.versions["cf_units"]}"
+    iris_ver           =  "${var.versions["iris"]}"
   }
 }
 

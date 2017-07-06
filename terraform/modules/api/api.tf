@@ -44,7 +44,7 @@ resource "aws_api_gateway_method_response" "200" {
 }
 
 
-#  Can not deploy automatically. Always returns 500 error when calling the API. Doing it manually via AWS website works.
+
 resource "aws_api_gateway_integration_response" "integrationResponse" {
   rest_api_id = "${aws_api_gateway_rest_api.api.id}"
   resource_id = "${aws_api_gateway_rest_api.api.root_resource_id}"
@@ -55,7 +55,7 @@ resource "aws_api_gateway_integration_response" "integrationResponse" {
   }
 }
 
-# TODO: This can not be deployed automatically, will always get a 500 error, need to do it manually via api gateway.
+
 
 resource "aws_api_gateway_deployment" "deployment" {
   depends_on = ["aws_api_gateway_method.post", 
