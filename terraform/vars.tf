@@ -1,5 +1,6 @@
-provider "aws" {
-  region = "eu-west-1"
+
+variable "region" {
+  default = "eu-west-1"
 }
 
 variable "iam_profile" {
@@ -10,7 +11,17 @@ variable "dns" {
   default = "erdc-api.informaticslab.co.uk"
 }
 
+variable "aws_account_id" {}
 
-variable "to_process_queue_name" {
-  default = "erdc-api-to-process"
+variable "bucket_name" {
+  default = "regrid-api-result"
+}
+
+variable "versions" {
+  type = "map"
+  default = {
+    distributed = "1.17.1"
+    dask        = "0.15.0"
+    iris        = "1.13.0"
+  }
 }
