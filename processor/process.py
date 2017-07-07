@@ -75,12 +75,17 @@ def process(msg):
     job_id = body['id']
     print("dates:", body['domain']['axes']['t'])
     datetimes = [datetime.strptime(time, "%Y-%m-%dT%H:%M:%S%Z") for time in body['domain']['axes']['t']['values']]
-    params = body['parameters'].keys()
+    params = list(body['parameters'].keys())
     lats = body['domain']['axes']['lat']['values']
     lons = body['domain']['axes']['lon']['values']
-        
-    results = leeroyjenkins(datetimes, lats=lats, lons=lons, params=params)
+    
+    print("RUN:", lats, lons, params)
+    results = client.run(prep, datetimes, lats=lats, lons=lons, params=params)
+    local_data_uris = results[list(results.keys())[0]]
+    print("local_data", local_data_uris, type(local_data_uris),"--")
+    results = leeroyjenkins(local_data_uris, datetimes, lats=lats, lons=lons, params=params)
     mycubes = results.compute()
+
     path = "/tmp/%s.nc" % uuid.uuid4().hex
     iris.save(mycubes, path)
 
@@ -136,7 +141,12 @@ MODELS = {
 }
 
 
-def leeroyjenkins(times, lons, lats, params):
+def prep(times, lons, lats, params):
+    remote_data_uris = find_data(lats, lons, times)
+    local_data_uris = retrieve_data(remote_data_uris)
+    return local_data_uris
+
+def leeroyjenkins(local_data_uris, times, lons, lats, params):
     """
     Args:
         * times (iterable of datetime.datetime), forecast reference time
@@ -145,8 +155,8 @@ def leeroyjenkins(times, lons, lats, params):
         
     """
 
-    remote_data_uris = find_data(lats, lons, times)
-    local_data_uris = retrieve_data(remote_data_uris)
+    # remote_data_uris = find_data(lats, lons, times)
+    # local_data_uris = retrieve_data(remote_data_uris)
     processed_data = process_data(local_data_uris, lats, lons, times, params)
     return processed_data
 #     processed_data_uris = export_data(processed_data, endpoint)

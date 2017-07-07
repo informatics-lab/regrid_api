@@ -13,6 +13,7 @@ module "processor" {
   iam_role = "${var.iam_role}"
   input_queue_name = "${module.queue.input_queue}"
   versions = "${var.versions}"
+  bucket = "${var.bucket_name}"
 }
 
 module "api" {

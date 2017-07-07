@@ -2,9 +2,9 @@
 
 resource "aws_autoscaling_policy" "workers_on" {
   name                   = "workers_on"
-  scaling_adjustment     = 3 # TODO: Be confident in the scaling adjustments
+  scaling_adjustment     = 3 
   adjustment_type        = "ExactCapacity"
-  cooldown               = 300
+  cooldown               = 1200
   autoscaling_group_name = "${aws_autoscaling_group.erdc_dask_workers.name}" 
 }
 
@@ -12,15 +12,15 @@ resource "aws_autoscaling_policy" "workers_off" {
   name                   = "workers_off"
   scaling_adjustment     = 0 
   adjustment_type        = "ExactCapacity"
-  cooldown               = 60 # TODO: Think about cool down, should one be just under an hour?
+  cooldown               = 30 
   autoscaling_group_name = "${aws_autoscaling_group.erdc_dask_workers.name}" 
 }
 
 resource "aws_autoscaling_policy" "scheduler_on" {
   name                   = "scheduler_on"
-  scaling_adjustment     = 1 # TODO: Be confident in the scaling adjustments
+  scaling_adjustment     = 1 
   adjustment_type        = "ExactCapacity"
-  cooldown               = 300
+  cooldown               = 1200
   autoscaling_group_name = "${aws_autoscaling_group.scheduler.name}" 
 }
 
@@ -28,7 +28,7 @@ resource "aws_autoscaling_policy" "scheduler_off" {
   name                   = "scheduler_off"
   scaling_adjustment     = 0 
   adjustment_type        = "ExactCapacity"
-  cooldown               = 60 # TODO: Think about cool down, should one be just under an hour?
+  cooldown               = 30 
   autoscaling_group_name = "${aws_autoscaling_group.scheduler.name}" 
 }
 
@@ -191,7 +191,7 @@ resource "aws_elb" "schd-elb-internal" {
   # The same availability zone as our instances
   security_groups     = ["${aws_security_group.sched_lb.id}"]
   internal            = true
-  subnets             = ["subnet-18da626f", "subnet-cd61f1a8"] # TODO: Don't hard code and don't use default?
+  subnets             = ["subnet-18da626f", "subnet-cd61f1a8", "subnet-07914c5e"] # TODO: Don't hard code and don't use default?
   listener {
     instance_port     = 8786
     instance_protocol = "TCP"
@@ -217,7 +217,8 @@ data "template_file" "scheduler_config" {
     script              = "${file("../processor/process.py")}" # A better way might be to upload to s3 / pastebin and download.
     dask_ver            =  "${var.versions["dask"]}"
     distributed_ver     =  "${var.versions["distributed"]}"
-    iris_ver           =  "${var.versions["iris"]}"
+    iris_ver            =  "${var.versions["iris"]}"
+    bucket_name         =  "${var.bucket}"
   }
 }
 

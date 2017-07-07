@@ -6,3 +6,4 @@ variable "iam_role" {
 variable versions {
     type        = "map"
 }
+variable bucket {}
