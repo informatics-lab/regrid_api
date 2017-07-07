@@ -80,7 +80,7 @@ def process(msg):
     lons = body['domain']['axes']['lon']['values']
     
     print("RUN:", lats, lons, params)
-    results = client.run(prep, datetimes, lats=lats, lons=lons, params=params)
+    results = client.run(prep, times=datetimes, lats=lats, lons=lons, params=params)
     local_data_uris = results[list(results.keys())[0]]
     print("local_data", local_data_uris, type(local_data_uris),"--")
     results = leeroyjenkins(local_data_uris, datetimes, lats=lats, lons=lons, params=params)
@@ -155,8 +155,8 @@ def leeroyjenkins(local_data_uris, times, lons, lats, params):
         
     """
 
-    # remote_data_uris = find_data(lats, lons, times)
-    # local_data_uris = retrieve_data(remote_data_uris)
+    remote_data_uris = find_data(lats, lons, times)
+    local_data_uris = retrieve_data(remote_data_uris)
     processed_data = process_data(local_data_uris, lats, lons, times, params)
     return processed_data
 #     processed_data_uris = export_data(processed_data, endpoint)
