@@ -3,16 +3,21 @@ try:
 except ImportError:
     import boto as boto3
 
+from flask import Flask, request, jsonify
+import pika
 import os
 import json
 import uuid
+import logging
 
-sqs = boto3.resource('sqs', region_name='eu-west-1')
-s3 = boto3.resource('s3', region_name='eu-west-1')
-queue = sqs.get_queue_by_name(QueueName=os.environ['QUEUE_NAME'])
-BUCKET = os.environ['BUCKET_NAME']
+root = logging.getLogger()
+root.setLevel(logging.DEBUG)
 
+s3 = boto3.resource('s3', region_name='eu-west-1') # TODO: do we need region? shouldn't be hard coded.
 
+QUEUE_NAME = os.environ['QUEUE_NAME']
+BROKER_HOST = os.environ['MQ_HOST']
+BUCKET_NAME = os.environ['BUCKET_NAME']
 
 
 def is_valid(coverage):
@@ -71,29 +76,45 @@ def make_status_file_bytes():
     return json.dumps({"status":"pending"}).encode('utf-8')
 
 def upload_status_file(request_id):
-    s3.Bucket(BUCKET).put_object(
+    s3.Bucket(BUCKET_NAME).put_object(
         Key="%s/status" % request_id, 
         Body=make_status_file_bytes(), 
         ContentType='application/json')
-    return "https://s3-eu-west-1.amazonaws.com/%s/%s/status" % (BUCKET, request_id)
+    return "https://s3-eu-west-1.amazonaws.com/%s/%s/status" % (BUCKET_NAME, request_id)
 
-def aws_lambda_handeler(event, context): 
 
+
+app = Flask(__name__)
+@app.route("/", methods=['POST'])
+def aws_lambda_handeler(): 
+    coverage = request.get_json() 
     try:
-        is_valid(event)
+        is_valid(coverage)
     except ValueError as e:
-        return {'bad_request': str(e)} # TODO: currently any response is a 200. Should add a mapping in terraform.
-    
+        return jsonify({'bad_request': str(e)} )# TODO: currently any response is a 200. Should add a mapping in terraform.
     request_id = uuid.uuid4().hex
     status_url = upload_status_file(request_id)
-    message = event
+    message = coverage
     message['status_url'] = status_url
     message['id'] = request_id
 
-    response = queue.send_message(MessageBody=json.dumps(message))
-    
+    connection = pika.BlockingConnection(pika.ConnectionParameters(BROKER_HOST))
+    channel = connection.channel()
+    channel.queue_declare(queue=QUEUE_NAME)
+    channel.basic_publish(exchange='', routing_key=QUEUE_NAME,
+                            body=json.dumps(message))
+    connection.close()
 
-    return {
-        "status":status_url,
-        "message_info":response,
-    }
+    return jsonify({
+        "status":status_url
+    })
+
+
+@app.route("/hi")
+def hi():
+    return 'hi'
+
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0")

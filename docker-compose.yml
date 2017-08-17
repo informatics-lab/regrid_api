@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  api:
+    build:
+      context: "./api"
+    environment:
+      - MQ_HOST=regridmq
+      - QUEUE_NAME=regrid_to_process
+      - BUCKET_NAME=regrid-api-result
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+    depends_on:
+      - regridmq
+    ports:
+      - "5000:5000"
+
+  dask:
+    build:
+      context: "./processor"
+    command: /bin/bash -c "dask-scheduler & dask-worker localhost:8786"
+    ports:
+      - "8787:8787"
+    expose:
+      - "8786"
+
+  processor:
+    build:
+      context: "./processor"
+    depends_on:
+      - regridmq
+    environment:
+      - MQ_HOST=regridmq
+      - QUEUE_NAME=regrid_to_process
+      - BUCKET_NAME=regrid-api-result
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - SCH_ADDR=dask:8786
+  
+  regridmq:
+    image: rabbitmq

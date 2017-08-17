@@ -1,13 +1,15 @@
 import boto3            
-import time
-import sys
-import distributed
 import os
 import json
-
 import uuid
 import traceback
+from datetime import datetime, timedelta
+import pika
+# import regrid
+import time
+import distributed
 
+import sys
 import iris
 iris.FUTURE.cell_datetime_objects = True
 iris.FUTURE.netcdf_promote = True
@@ -22,33 +24,13 @@ import dask.bag as db
 import dask
 import urllib.request
 
-print ('Processor starting')
 
+print ('Processor starting')
+s3 = boto3.resource('s3', region_name='eu-west-1')
 QUEUE_NAME = os.environ['QUEUE_NAME'] 
 BUCKET = os.environ['BUCKET_NAME']
-
-print ("Queue = %s" % QUEUE_NAME)
-
-sqs = boto3.resource('sqs', region_name='eu-west-1')
-s3 = boto3.resource('s3', region_name='eu-west-1')
-queue = sqs.get_queue_by_name(QueueName=QUEUE_NAME)
-
-
-print('connected to sqs')
-
-client = None;
-while not client:
-    try:
-        client = distributed.Client('localhost:8786') 
-    except Exception as e:
-        print(e)
-
-print('connected to scheduler.', client)
-
-while len(client.ncores().keys()) < 1:
-    print("Client not ready ", client)
-    time.sleep(30)
-
+BROKER_HOST = os.environ['MQ_HOST']
+# client = distributed.Client('localhost:8786') 
 
 def make_status_file_bytes(result_url):
     return json.dumps({"status":"done", "result":result_url}).encode('utf-8')
@@ -69,9 +51,8 @@ def upload_result(job_id, file_path):
     return "https://s3-eu-west-1.amazonaws.com/%s/%s/result.nc" % (BUCKET, job_id)
 
 
-def process(msg):
-    body = json.loads(msg.body)
-    print(body)
+def process(ch, method, properties, body):
+    body = json.loads(body)
     job_id = body['id']
     print("dates:", body['domain']['axes']['t'])
     datetimes = [datetime.strptime(time, "%Y-%m-%dT%H:%M:%S%Z") for time in body['domain']['axes']['t']['values']]
@@ -79,8 +60,10 @@ def process(msg):
     lats = body['domain']['axes']['lat']['values']
     lons = body['domain']['axes']['lon']['values']
     
-    print("RUN:", lats, lons, params)
-    results = client.run(prep, times=datetimes, lats=lats, lons=lons, params=params)
+    print("RUN: for %s lats, %s lons and params: %s" % (len(lats), len(lons), params))
+    # results = client.result(regrid.prep, times=datetimes, lats=lats, lons=lons, params=params)
+    results = do_prep(times=datetimes, lats=lats, lons=lons, params=params)
+    print ("done prep")
     local_data_uris = results[list(results.keys())[0]]
     print("local_data", local_data_uris, type(local_data_uris),"--")
     results = leeroyjenkins(local_data_uris, datetimes, lats=lats, lons=lons, params=params)
@@ -92,18 +75,21 @@ def process(msg):
     result_url = upload_result(job_id, path)
     upload_status_file(job_id, result_url)
     print("Message processed, will delete. Result at %s" % result_url)
-    msg.delete()
     os.remove(path)
 
 
 
-def process_all_messages():
-    for msg in queue.receive_messages():
-        try:
-            process(msg)
-        except Exception as e:
-            traceback.print_exc()
 
+
+
+
+
+
+         
+
+
+
+client = distributed.Client(os.environ['SCH_ADDR']) 
         
 ## From ERDC Regrid notebook
 lats = [x / 100.0 for x in range(3000, 4000)]
@@ -140,6 +126,8 @@ MODELS = {
     }
 }
 
+def do_prep(times, lats, lons, params):
+    return client.run(prep, times=times, lats=lats, lons=lons, params=params)
 
 def prep(times, lons, lats, params):
     remote_data_uris = find_data(lats, lons, times)
@@ -241,13 +229,37 @@ params = ['wet_bulb_freezing_level_altitude', 'air_pressure_at_sea_level', 'dew_
           'fog_area_fraction', 'visibility_in_air', 'high_type_cloud_area_fraction']
 
 
-# go 
-        
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
 if __name__ == '__main__':
-    print ('Waiting for messages')
-    while True:
-        process_all_messages()
-        print("sleep for a bit")
-        sys.stdout.flush()
-        time.sleep(5)
+    time.sleep(5) #TODO: work out a better way.
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(BROKER_HOST,
+         retry_delay=5,
+         connection_attempts=60))
+    channel = connection.channel()
+    channel.queue_declare(queue=QUEUE_NAME)
+    channel.basic_consume(process,
+                      queue=QUEUE_NAME,
+                      no_ack=True)
+    channel.start_consuming()
+    print('done')
