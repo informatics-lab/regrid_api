@@ -1,0 +1,23 @@
+# Deployment
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: regrid-messaging
+  namespace: regrid
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: regrid-messaging
+    spec:
+      containers:
+        - image: rabbitmq
+          imagePullPolicy: Always
+          name: regrid-messaging
+          
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi

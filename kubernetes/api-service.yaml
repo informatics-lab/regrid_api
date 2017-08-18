@@ -1,0 +1,12 @@
+# Service
+kind: Service
+metadata:
+  name: regrid-api
+  namespace: regrid
+spec:
+  ports:
+    - port: 80
+      targetPort: 5000
+      protocol: TCP
+  selector:
+    app: regrid-api

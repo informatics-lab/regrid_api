@@ -74,3 +74,4 @@ localConfig.json
 **/lambda.zip
 
 **/.terraform/*
+**/secrets.yaml

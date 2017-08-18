@@ -1,0 +1,23 @@
+# Deployment
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: regrid-dask
+  namespace: regrid
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: regrid-dask
+    spec:
+      containers:
+        - image: informaticslab/regridding_processor
+          command: ["/bin/bash"]
+          args: ["-c", "dask-scheduler & dask-worker localhost:8786"]
+          imagePullPolicy: Always
+          name: regrid-dask
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi

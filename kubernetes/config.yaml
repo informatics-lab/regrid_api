@@ -1,0 +1,8 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: regrid-config
+  namespace: regrid
+data:
+  statusBucket.name: regrid-api-result
+  pendingQueue.name: regrid_to_process

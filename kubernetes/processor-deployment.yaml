@@ -1,0 +1,53 @@
+# Deployment
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: regrid-processor
+  namespace: regrid
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: regrid-processor
+    spec:
+      containers:
+        - image: informaticslab/regridding_processor
+          imagePullPolicy: Always
+          name: regrid-processor
+          env:
+
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: regrid
+                  key: AWS_ACCESS_KEY_ID
+
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: regrid
+                  key: AWS_SECRET_ACCESS_KEY
+
+            - name: MQ_HOST
+              value: regrid-processor
+
+            - name: QUEUE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: regrid-config
+                  key: pendingQueue.name
+            
+            - name: BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: regrid-config
+                  key: statusBucket.name
+
+            - name: SCH_ADDR
+              value: dask:8786
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
