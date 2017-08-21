@@ -50,6 +50,14 @@ resource "aws_iam_user_policy" "regrid" {
 EOF
 }
 
+resource "aws_route53_record" "regrid" {
+  zone_id = "Z3USS9SVLB2LY1" # Get this from your AWS console
+  name    = "regrid"
+  type    = "CNAME"
+  ttl     = "300"
+  records = ["ingress.k8s.informaticslab.co.uk"]
+}
+
 output "secret" {
   value = "${aws_iam_access_key.regrid.encrypted_secret}"
 }
