@@ -17,7 +17,7 @@ s3 = boto3.resource('s3', region_name='eu-west-1') # TODO: do we need region? sh
 
 QUEUE_NAME = os.environ['QUEUE_NAME']
 BROKER_HOST = os.environ['MQ_HOST']
-BUCKET_NAME = os.environ['BUCKET_NAME']
+BUCKET_NAME = QUEUE_NAME
 
 
 def is_valid(coverage):
@@ -112,7 +112,16 @@ def aws_lambda_handeler():
 
 @app.route("/hi")
 def hi():
-    return 'hi'
+    logging.info('dets')
+    logging.info(QUEUE_NAME)
+    logging.info(BROKER_HOST)
+    logging.info(QUEUE_NAME)
+    logging.info('"%s"' % os.environ['AWS_ACCESS_KEY_ID'])
+    logging.info('"%s"' % os.environ['AWS_SECRET_ACCESS_KEY'][8:12])
+    logging.info('"%s"' % os.environ['AWS_SECRET_ACCESS_KEY'][23:29])
+    logging.info('dets over')
+
+    return 'hi to you'
 
 
 
