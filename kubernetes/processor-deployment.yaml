@@ -12,7 +12,7 @@ spec:
         app: regrid-processor
     spec:
       containers:
-        - image: informaticslab/regridding_processor
+        - image: informaticslab/regridding_processor:kubenetes
           imagePullPolicy: Always
           name: regrid-processor
           env:
@@ -30,7 +30,7 @@ spec:
                   key: AWS_SECRET_ACCESS_KEY
 
             - name: MQ_HOST
-              value: regrid-processor
+              value: regrid-messaging
 
             - name: QUEUE_NAME
               valueFrom:
