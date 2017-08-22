@@ -21,3 +21,17 @@ spec:
             requests:
               cpu: 50m
               memory: 100Mi
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: regrid-messaging
+  namespace: regrid
+spec:
+  ports:
+    - port: 5672
+      name: amqp
+  selector:
+    app: regrid-messaging
+---
