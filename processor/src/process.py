@@ -23,13 +23,19 @@ from dask import delayed
 import dask.bag as db
 import dask
 import urllib.request
+import logging
+
+root = logging.getLogger()
+root.setLevel(logging.DEBUG)
 
 
-print ('Processor starting')
+logging.info ('Processor starting')
 s3 = boto3.resource('s3', region_name='eu-west-1')
 QUEUE_NAME = os.environ['QUEUE_NAME'] 
 BUCKET = os.environ['BUCKET_NAME']
 BROKER_HOST = os.environ['MQ_HOST']
+SCH_ADDR = os.environ['SCH_ADDR']
+logging.info ('Vars %s' % [QUEUE_NAME, BUCKET, BROKER_HOST, SCH_ADDR])
 # client = distributed.Client('localhost:8786') 
 
 def make_status_file_bytes(result_url):
@@ -87,14 +93,16 @@ def process(ch, method, properties, body):
 
          
 
+logging.info('Connect to client')
 
+sched_add = os.environ['SCH_ADDR']
+client = distributed.Client(SCH_ADDR)
 
-client = distributed.Client(os.environ['SCH_ADDR']) 
-        
+logging.info('connected %s' % client)
+
 ## From ERDC Regrid notebook
 lats = [x / 100.0 for x in range(3000, 4000)]
 lons = [x / 100.0 for x in range(3000, 4000)]
-
 
 
 def make_data_object_name(dataset_name, forecast_reference_time, forecast_period, realization=0):
@@ -249,17 +257,20 @@ params = ['wet_bulb_freezing_level_altitude', 'air_pressure_at_sea_level', 'dew_
 
 
 
-        
+logging.info('Enter main')        
 if __name__ == '__main__':
-    time.sleep(5) #TODO: work out a better way.
+    logging.info('In main')    
+    time.sleep(10) #TODO: work out a better way.
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(BROKER_HOST,
          retry_delay=5,
          connection_attempts=60))
     channel = connection.channel()
+    logging.info('Connected to Messaging')    
     channel.queue_declare(queue=QUEUE_NAME)
     channel.basic_consume(process,
                       queue=QUEUE_NAME,
                       no_ack=True)
+    logging.info('Start conssuming...')  
     channel.start_consuming()
-    print('done')
+    logging.info('done')
