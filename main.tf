@@ -58,6 +58,15 @@ resource "aws_route53_record" "regrid" {
   records = ["ingress.k8s.informaticslab.co.uk"]
 }
 
+resource "aws_route53_record" "regrid-stats" {
+  zone_id = "Z3USS9SVLB2LY1" # Get this from your AWS console
+  name    = "regrid-stats"
+  type    = "CNAME"
+  ttl     = "300"
+  records = ["ingress.k8s.informaticslab.co.uk"]
+}
+
+
 output "secret" {
   value = "${aws_iam_access_key.regrid.encrypted_secret}"
 }

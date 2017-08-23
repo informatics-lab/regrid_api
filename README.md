@@ -1,6 +1,33 @@
 # Regridding API
 Distributed regridding API
 
+## Currently broken because...
+
+So this won't currently work and will fail like:
+```
+ERROR:root:Error in main.
+Traceback (most recent call last):
+  File "process.py", line 279, in <module>
+    main()
+  File "process.py", line 270, in main
+    channel.start_consuming()
+  File "/opt/conda/lib/python3.6/site-packages/pika/adapters/blocking_connection.py", line 1681, in start_consuming
+    self.connection.process_data_events(time_limit=None)
+  File "/opt/conda/lib/python3.6/site-packages/pika/adapters/blocking_connection.py", line 656, in process_data_events
+    self._dispatch_channel_events()
+  File "/opt/conda/lib/python3.6/site-packages/pika/adapters/blocking_connection.py", line 469, in _dispatch_channel_events
+    impl_channel._get_cookie()._dispatch_events()
+  File "/opt/conda/lib/python3.6/site-packages/pika/adapters/blocking_connection.py", line 1310, in _dispatch_events
+    evt.body)
+  File "process.py", line 73, in process
+    local_data_uris = results[list(results.keys())[0]]
+IndexError: list index out of range
+```
+
+This is because the Dask workers are scaled by the scheduler based on how much 'work' there is, however
+the fist job the `processor.py` is to download all the files onto the available workers of which there will be zero. The fix to this might be the Thredds based random access to NetCDF data on s3, then we wouldn't have to download the data first. This work is in progress.
+
+
 ### Running API locally:
 
 Ensure the AWS env variables `AWS_ACCESS_KEY_ID` and  `AWS_SECRET_ACCESS_KEY`
@@ -111,7 +138,25 @@ The result of this is what goes in `secrets.yaml` as `AWS_SECRET_ACCESS_KEY`.
 
 A useful debug tool is to remove the final base64 encoding and setting your `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables to those derived and testing a command like `aws s3api list-objects --bucket regrid-api-result`
 
-## Whatch out!
+## Kubernetes
+
+```
+kubectl create -f namespace.yaml
+kubectl create -f secrets.yaml
+kubectl create -f config.yaml
+kubectl create configmap scheduler --from-file=adaptive.py --from-file=run.sh  --namespace=regrid
+
+kubectl create -f messaging.yaml
+
+kubectl create -f dask-worker.yaml
+kubectl create -f scheduler.yaml
+
+
+kubectl create -f api.yaml
+```
+
+
+## Watch out!
 
 If you get an error like:
 
