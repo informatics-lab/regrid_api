@@ -253,12 +253,7 @@ params = ['wet_bulb_freezing_level_altitude', 'air_pressure_at_sea_level', 'dew_
 
 
 
-
-
-
-
-logging.info('Enter main')        
-if __name__ == '__main__':
+def main():
     logging.info('In main')    
     time.sleep(10) #TODO: work out a better way.
     connection = pika.BlockingConnection(
@@ -273,4 +268,15 @@ if __name__ == '__main__':
                       no_ack=True)
     logging.info('Start conssuming...')  
     channel.start_consuming()
+    
+
+
+
+logging.info('Enter main')        
+if __name__ == '__main__':
+    while True:
+        try:
+            main()
+        except Exception as e:
+            logging.exception("Error in main.")
     logging.info('done')
