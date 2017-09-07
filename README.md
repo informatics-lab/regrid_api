@@ -167,8 +167,4 @@ ValueError: Invalid header value b'AWS4-HMAC-SHA256 Credential=DFADFGREESDGREWSD
 When the `api.py` script is run then there are probably newlines (likely trailing) in the AWS details, likely before they were base64 encoded. 
 
 ## TODOs
-<<<<<<< HEAD
 Scale the dask cluster?
-=======
-Avoid elastic load balancer? maybe use a self editing DNS entry.
->>>>>>> master
