@@ -15,8 +15,9 @@ spec:
       automountServiceAccountToken: true
       containers:
         - image: informaticslab/regridding_processor:kubenetes
-          command: ["/bin/bash"]
-          args: ["/opt/scheduler/run.sh"]
+          command: ["sh", "-c"]
+          args:
+            - dask-scheduler --port 8786 --bokeh-port 8787
           imagePullPolicy: Always
           name: dask-scheduler
           ports:
@@ -26,44 +27,6 @@ spec:
             requests:
               cpu: 100m
               memory: 1Gi # Do we need to grab this much?
-          volumeMounts:
-            - name: config-volume
-              mountPath: /opt/scheduler
-      volumes:
-        - name: config-volume
-          configMap:
-            name: scheduler
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: dask-autoscaler
-  namespace: regrid
----
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  namespace: regrid
-  name: dask-autoscaler
-rules:
-- apiGroups: [""]
-  resources: ["deployment"]
-  resourceNames: ["dask-workers"]
-  verbs: ["update", "get"]
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: RoleBinding
-metadata:
-  name: dask-autoscaler
-  namespace: regrid
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: dask-autoscaler
-subjects:
-  - kind: ServiceAccount
-    name: dask-autoscaler
-    namespace: dask
 ---
 # Service
 kind: Service
@@ -85,7 +48,7 @@ metadata:
   namespace: regrid
 spec:
   ports:
-    - port: 8787
+    - port: 80
       targetPort: 8787
       protocol: TCP
   selector:
