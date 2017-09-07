@@ -1,4 +1,4 @@
-# ERDC Regridding API
+# Regridding API
 API for regriding MOGREPS data
 
 # Gotchas
