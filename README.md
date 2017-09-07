@@ -144,7 +144,6 @@ A useful debug tool is to remove the final base64 encoding and setting your `AWS
 kubectl create -f namespace.yaml
 kubectl create -f secrets.yaml
 kubectl create -f config.yaml
-kubectl create configmap scheduler --from-file=adaptive.py --from-file=run.sh  --namespace=regrid
 
 kubectl create -f messaging.yaml
 
